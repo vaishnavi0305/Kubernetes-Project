@@ -206,3 +206,6 @@ Now even if you try deleting 1 pod from the cluster, it will recreate and replic
  ![image](https://github.com/user-attachments/assets/8385c8f2-209a-4c2c-b9d9-6a873d5093e7)
 
 So in summary, Kubernetes deployment will create rs and rs will create pods
+
+//Reference Resource https://www.youtube.com/watch?v=lVKLkyuRWCY&list=PLdpzxOOAlwvIKMhk8WhzN1pYoJ1YU8Csa&index=41&ab_channel=Abhishek.Veeramalla
+Thank you
