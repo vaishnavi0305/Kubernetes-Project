@@ -149,7 +149,7 @@ Now create a deployment.yml file
 
 **deployment.yml**
 
-_apiVersion: apps/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-deployment
@@ -170,17 +170,17 @@ spec:
         image: nginx:1.14.2
         ports:
 - containerPort: 80
-_
+
 
 You can see in the above deployment.yml file, we have mentioned for now that we want to create only 1 pod .
 
 *Create a deployment
-_>kubectl apply -f deployment.yml_
+>kubectl apply -f deployment.yml
 *Now to check if deployment is created use 
-_>kubectl get deploy_
+>kubectl get deploy
 *And the magic here is, if you search for pods they are also created and as well as replica set
-_>kubectl get rs
->kubectl get pods_
+>kubectl get rs
+>kubectl get pods
  ![image](https://github.com/user-attachments/assets/8933cc3f-0b75-4e77-b69b-9cbbdaca367f)
 
  ![image](https://github.com/user-attachments/assets/82f3d97e-28a5-4cbf-81c4-7e9d83c52948)
