@@ -107,3 +107,102 @@ curl ipaddressOfPod
 ![image](https://github.com/user-attachments/assets/03ef76f3-003d-4909-a38f-12cbf1f0eb00)
  
 Hurray, Here we have successfully deployed our first app on kubernetes!!
+==============================================================================
+
+**Kubernetes Deployment:-**
+
+First understand why do we need Kubernetes deployment. We will understand by knowing the difference between container, pods and deployment
+
+**Difference between Container, pods and deployment?**
+> Container:-
+Using docker you can run the image and create a container , where you will mention the below command specifying manually what all parameters needs to be passed to it
+example:- docker run -d (or -it) –name=nameofcontainer –network= ...... --p=........ ... etc etc
+Now kubernetes wants this to be declarative and enterprise level, so introduced the concept Pods.
+
+>Pods:-
+ Pod is just the wrapper of container, means it just specifies about the container specification you want to create.
+Now, pod can contain 1 or more containers, (Mostly 1 container per pod).
+It may contain 2 or more containers in 1 pod if there is any situation where one application inside the containers needs some information from the other application in another container.
+So in this case they can be added onto one single pod and if you do so, kubernetes will give you some advantage where the 2 containers inside that single pod can share networking, share files, talk to each other using localhost.
+Now why do we need deployment then?
+
+>Deployment:-
+Pods don’t provide the feature of auto healing and autoscaling, which is the main reason Kubernetes comes into picture over docker.
+So Kubernetes says, don’t deploy pods directly onto cluster, instead create deployment and it will use the kubernetes controller called replicaset to manage Autohealing and autoscaling capacity
+
+Here, how it works...
+First we will write a deployment yaml file, and we will specify what is the desired state of the cluster, example if you mentioned desired state as 2 , replica set will make sure the cluster maintains this 2 sets of pods, even if user deletes one of them mistakenly (which is the concept of autohealing).
+
+Wondering what is **controller?**
+> Kubernetes has more than 1 different controllers and you can also make the custom controller.
+>It just maintains the desired state of the cluster. Whatever you have specified the state of cluster in the yaml should be, controller will make sure to maintain that desired state.
+> So in short, when you create a deployment i.e write a yaml file, replicaset will be created automatically which is responsible for tracking the controller behaviour in kubernetes.
+--------------------------------------
+**Demo on Kubernetes Deployment:-**
+
+First make sure you have Kubernetes cluster, may you have created using Minikube or KOPS
+To list or check that you can use
+_>kubectl get all_
+or to check for all namespaces , all the applications in your cluster you can use
+_>kubectl get all -A_
+Now create a deployment.yml file
+
+**deployment.yml**
+
+_apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+- containerPort: 80
+_
+
+You can see in the above deployment.yml file, we have mentioned for now that we want to create only 1 pod .
+
+*Create a deployment
+_>kubectl apply -f deployment.yml_
+*Now to check if deployment is created use 
+_>kubectl get deploy_
+*And the magic here is, if you search for pods they are also created and as well as replica set
+_>kubectl get rs
+>kubectl get pods_
+ ![image](https://github.com/user-attachments/assets/8933cc3f-0b75-4e77-b69b-9cbbdaca367f)
+
+ ![image](https://github.com/user-attachments/assets/82f3d97e-28a5-4cbf-81c4-7e9d83c52948)
+
+Now the main goal of this is that deployment or rs should maintain the mentioned replica set in the deployment.yml file which in our case is 1
+So, open two terminal
+In one you can watch the pods
+_>kubectl get pods -w_
+And in other one you perform the delete action of pod
+_>kubectl delete pod <podname>_
+you can see in the terminal in which you were watching the pods, that the new pod has been recreated even before the pod is terminated (you can observe below that it is showing as terminating not terminated)
+ ![image](https://github.com/user-attachments/assets/68d221a0-a52e-4a64-9cde-306510fbce09)
+
+Now lets try increasing the pod count, go to the deployment.yml file and increase the count of replica set from 1 to 3.
+and apply or create the deployment.yml file
+_>kubectl apply -f deployment.yml_
+and check for the pods, it should be 3 pods running now.
+ ![image](https://github.com/user-attachments/assets/d280e27a-d404-4bce-b8bf-a8cefa81f6c7)
+
+Now even if you try deleting 1 pod from the cluster, it will recreate and replica set controller will make sure that 3 pods are running
+ ![image](https://github.com/user-attachments/assets/c951bf25-ef6d-41a4-a6ae-83cee14774d6)
+
+ ![image](https://github.com/user-attachments/assets/8385c8f2-209a-4c2c-b9d9-6a873d5093e7)
+
+So in summary, Kubernetes deployment will create rs and rs will create pods
