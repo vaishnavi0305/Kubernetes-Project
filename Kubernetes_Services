@@ -1,0 +1,60 @@
+Kubernetes Service:-
+
+First we will understand why do we need Kubernetes Service:-
+
+Suppose imagine a scenario where you are not using the Kubernetes service concept, so the general workflow would be like, you will create a deployment inside the node and that deployment with the help of replica set will create the no. of pods mentioned in your deployment.yml file.
+Example, there is a requirement of creating 3 pods.
+
+And why do we need multiple pods, because of the amount of concurrent request coming to access the application.
+Suppose you have 30 concurrent request coming and you have defined somewhere that every pod will be accepting 10 requests each. 
+So the first 10 request will be going to pod1, next 10 will be handled by pod2 and next 10 will be with pod3.
+Now, due to some reason the pod1 has gone down and using the auto healing feature new pod has been created, but it will now has the new IP address. 
+Hence,the first 10 users will not be able to access the application.
+So, Here comes the concept of services. Meaning what you will do is, you will create a service on top of the Deployment and ask the users to access the payment application using the service name instead of IP addresses as they can change very frequently.
+And Kubernetes service, will act as a load balancer and how does he acts as a load balancer is, it will be using the component in kubernetes called Kubeproxy.
+And as soon as you create a service, it will assign a servicename and users will be able to access the application using service IP address or Load balancer IP address.
+along with that what the underlying Kubeproxy will do is, it will forward the request to each of the pods accordingly.
+
+So the first problem solved by Service is the Load balancing as explained above.
+
+Now you might get a question will Kubernetes Service will not face the same problem as the users trying to access the application, as how will the Kubernetes service will know the updated IP address when the pod was recreated or auto healed?
+
+So this is the 2nd problem which Kubernetes service solves is the service Discovery.
+
+What service will do is, it will not look up for the up IP addresses, instead it will use the concept labels and selectors. Where all the pods will be given the labels (This will be defined in deployment.yaml file).
+Example:-
+1. A request arrives at a service (e.g., service of type ClusterIP).
+2. Kube-proxy checks the service selector and identifies all pods matching the labels.
+3. The request is forwarded to one of the matching pods using round-robin or session affinity (if configured).
+In this way, Kubernetes ensures traffic is dynamically routed to the appropriate pods.
+
+And the 3rd Problem which Kubernetes service solves is Expose to World.
+
+How kubernetes service helps in exposing app to the external world?
+
+In Kubernetes, a Service can expose your application to the external world through different service types. Each service type has a specific purpose and method of making an application accessible outside the Kubernetes cluster. Here are the key types and how they expose an app externally:
+1. ClusterIP (Internal Access)
+    • Default service type: This service type exposes the application only within the Kubernetes cluster.
+    • Use case: Useful for internal communication between microservices.
+    • Access: External access is not available with ClusterIP directly.
+Note: Though ClusterIP is not directly exposed externally, you can combine it with an Ingress or reverse proxy setup to expose it to the external world.
+Whoever has access to Kubernetes cluster can access the app. Which is not how the realtime scenario works.
+2. NodePort (Direct External Access)
+    • How it works:
+        ◦ A NodePort service exposes an application on a static port on each node of the cluster.
+        ◦ Kubernetes opens the same port (e.g., 30000–32767) on all nodes, and any request made to that port on any node is routed to the service and then forwarded to the matching pods.
+    • Access: External users can access the application by sending requests to any node’s IP address along with the specific NodePort.
+    • Limitations:
+        ◦ Not ideal for production due to security concerns (all nodes open ports).
+        ◦ Port numbers are limited (30000–32767 range).
+Anybody within your organization , who might have access to the worker nodes Ip address can access the application.
+3. LoadBalancer (External Load Balancing)
+    • How it works:
+        ◦ A LoadBalancer service provisions an external load balancer (like AWS ELB, GCP Load Balancer, etc.) from the cloud provider.
+        ◦ The load balancer routes external traffic to the Kubernetes service, which then forwards it to the appropriate pods.
+    • Access: The external load balancer gets a public IP, and users can access the application via this IP or associated domain name.
+    • Use case: Ideal for production environments where applications need to be accessed from outside the cluster.
+      Suppose you have deployed cluster using EKS,and you have selected service type as loadbalancer, you will get a ELB IP address (Public Ip address) and the external world can access this application using Public IP address.
+How it works in Cloud Providers:
+    • On cloud platforms (AWS, GCP, Azure, etc.), when you create a LoadBalancer service, the cloud provider automatically provisions a load balancer and assigns it a public IP.
+    • The external IP of the load balancer routes the traffic to the NodePort assigned by Kubernetes.
